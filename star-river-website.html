@@ -1,0 +1,1507 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StarRiver — AI Inference Cloud for Open-Source Models</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family:
+          "Inter",
+          system-ui,
+          -apple-system,
+          sans-serif;
+      }
+      html {
+        /* 基准：1rem = 16px */
+        font-size: 100%;
+      }
+      :root {
+        --link: oklch(0.63 0.22 293.06);
+        --primary-btn-hover: oklch(0.44 0.22 293.73 / 0.94);
+        --primary-purple: oklch(0.49 0.24 294.11);
+        --splitter-line: oklch(0.3971 0.004 17.33);
+        --purple-transparent: rgba(157, 92, 255, 0.12);
+        --purple-border: rgba(157, 92, 255, 0.2);
+        --bg-dark: oklch(0.1308 0.0095 285);
+        --text-white: oklch(1 0 0);
+        --text-gray: rgba(255, 255, 255, 0.72);
+        --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+        /* 统一间距变量，方便全局调整 */
+        --header-nav-gap: 2rem; /* 桌面导航项之间间距 */
+        --nav-btn-gap: 2rem; /* 导航组 和 Get API Key按钮间距 */
+        --mobile-btn-hamburger-gap: 1rem; /* 移动端按钮和汉堡间距 */
+        --cta-btn-gap: 1rem; /* Hero两个CTA按钮间距 */
+      }
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-white);
+        line-height: 1.65;
+        overflow-x: hidden;
+        max-width: 59.25rem;
+        min-height: 100vh;
+        margin: 0 auto;
+        border: 1px dashed var(--splitter-line);
+      }
+
+      /* ========== Header【双端对齐优化重点】 ========== */
+      header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        max-width: 59.25rem;
+        padding: 1rem 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+        background: rgba(7, 7, 11, 0.7);
+        backdrop-filter: blur(0.75rem);
+        left: 50%;
+        transform: translateX(-50%);
+        /* 清除默认边框 */
+        border-top: none;
+        /* 左边、右边、底部：1px 虚线，紫色变量 */
+        border-left: 1px dashed var(--splitter-line);
+        border-right: 1px dashed var(--splitter-line);
+        border-bottom: 1px dashed var(--splitter-line);
+      }
+      .logo {
+        font-weight: 700;
+        font-size: 1.25rem;
+        color: white;
+      }
+      /* 右侧容器：分组隔离，内部gap独立控制 */
+      .header-right {
+        display: flex;
+        gap: var(--mobile-btn-hamburger-gap);
+        align-items: center;
+      }
+      .nav-group-desktop {
+        display: flex;
+        gap: var(--header-nav-gap);
+        align-items: center;
+        margin-right: var(--nav-btn-gap);
+      }
+      .nav-item {
+        position: relative;
+        cursor: pointer;
+        padding: 0.375rem 0;
+        color: var(--text-gray);
+        transition: color 0.25s;
+      }
+      .nav-item:hover {
+        color: white;
+      }
+      /* hover悬浮卡片（桌面端） */
+      .hover-card {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(0.75rem);
+        width: 18.75rem;
+        background: oklch(0.1771 0.0164 284.6);
+        border: 1px solid var(--purple-border);
+        border-radius: 0.875rem;
+        padding: 1.25rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: all 0.3s var(--ease-premium);
+      }
+      .nav-item:hover .hover-card {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0.5rem);
+      }
+      .hover-card h4 {
+        margin-bottom: 0.5rem;
+        color: oklch(1 0 0);
+        font-size: 1rem;
+      }
+      .hover-card p {
+        font-size: 0.875rem;
+        color: var(--text-gray);
+      }
+      .header-cta {
+        padding: 0.625rem 1.25rem;
+        border-radius: 0.5rem;
+        background: var(--primary-purple);
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: 0.25s var(--ease-premium);
+        white-space: nowrap;
+      }
+      .header-cta:hover {
+        background: var(--primary-btn-hover);
+        transform: translateY(-2px);
+      }
+
+      /* 汉堡按钮 */
+      .hamburger {
+        width: 2rem;
+        height: 2rem;
+        position: relative;
+        cursor: pointer;
+        display: block;
+      }
+      .hamburger span {
+        display: block;
+        width: 100%;
+        height: 2px;
+        background: oklch(1 0 0);
+        border-radius: 1px;
+        position: absolute;
+        transition: 0.3s var(--ease-premium);
+      }
+      .hamburger span:nth-child(1) {
+        top: 0.5rem;
+      }
+      .hamburger span:nth-child(2) {
+        top: 0.9rem;
+      }
+      .hamburger span:nth-child(3) {
+        top: 1.3rem;
+      }
+      .hamburger.active span:nth-child(1) {
+        top: 0.9rem;
+        transform: rotate(45deg);
+      }
+      .hamburger.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .hamburger.active span:nth-child(3) {
+        top: 0.9rem;
+        transform: rotate(-45deg);
+      }
+
+      /* 移动端侧边菜单 */
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 18.75rem;
+        height: 100vh;
+        background: oklch(0.1771 0.0164 284.6);
+        border-left: 1px solid var(--purple-border);
+        padding: 5rem 1.5rem;
+        transform: translateX(100%);
+        transition: transform 0.35s var(--ease-premium);
+        z-index: 99;
+      }
+      .mobile-menu.active {
+        transform: translateX(0);
+      }
+      .mobile-nav-item {
+        display: block;
+        padding: 0.875rem 0;
+        font-size: 1.125rem;
+        color: var(--text-gray);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .mobile-nav-item:hover {
+        color: oklch(1 0 0);
+      }
+      .menu-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        opacity: 0;
+        pointer-events: none;
+        transition: 0.3s;
+        z-index: 98;
+      }
+      .menu-overlay.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      /* 通用滚动动画类 */
+      .reveal {
+        opacity: 0;
+        will-change: transform, opacity;
+      }
+      .reveal-fadeup {
+        transform: translateY(2.25rem);
+        transition:
+          opacity 0.7s var(--ease-premium),
+          transform 0.7s var(--ease-premium);
+      }
+      .reveal-scale {
+        transform: scale(0.95);
+        transition:
+          opacity 0.7s var(--ease-premium),
+          transform 0.7s var(--ease-premium);
+      }
+      .reveal-slide-left {
+        transform: translateX(-2.5rem);
+        transition:
+          opacity 0.7s var(--ease-premium),
+          transform 0.7s var(--ease-premium);
+      }
+      .reveal-slide-right {
+        transform: translateX(2.5rem);
+        transition:
+          opacity 0.7s var(--ease-premium),
+          transform 0.7s var(--ease-premium);
+      }
+      .reveal.active {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+      .delay-1 {
+        transition-delay: 0.1s;
+      }
+      .delay-2 {
+        transition-delay: 0.2s;
+      }
+      .delay-3 {
+        transition-delay: 0.3s;
+      }
+
+      /* Hero区域 */
+      .hero {
+        min-height: 100vh;
+        padding: 6.25rem 1.5rem 0rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        background: radial-gradient(
+          circle at center,
+          rgba(157, 92, 255, 0.08),
+          transparent 60%
+        );
+      }
+      .hero h1 {
+        font-size: 2rem;
+        max-width: 62.5rem;
+        margin-bottom: 1.25rem;
+        letter-spacing: -0.03em;
+      }
+      .hero .subhead {
+        font-size: 1.25rem;
+        color: var(--text-gray);
+        max-width: 51.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .hero .desc {
+        font-size: 1.1875rem;
+        color: var(--text-gray);
+        max-width: 51.25rem;
+        margin-bottom: 2.5rem;
+      }
+      .cta-row {
+        display: flex;
+        gap: var(--cta-btn-gap);
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+        max-width: 32rem;
+      }
+      .btn-primary {
+        padding: 1rem 2.125rem;
+        border-radius: 0.625rem;
+        background: var(--primary-purple);
+        border: none;
+        color: oklch(1 0 0);
+        font-size: 1.0625rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.25s var(--ease-premium);
+        flex: 1;
+        min-width: 14rem;
+      }
+      .btn-primary:hover {
+        background: var(--primary-btn-hover);
+        transform: translateY(-2px);
+      }
+      .btn-secondary {
+        padding: 1rem 2.125rem;
+        border-radius: 0.625rem;
+        border: 1px solid var(--purple-border);
+        background: transparent;
+        color: oklch(1 0 0);
+        font-size: 1.0625rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.25s var(--ease-premium);
+        flex: 1;
+        min-width: 14rem;
+      }
+      .btn-secondary:hover {
+        border-color: var(--primary-purple);
+        background: var(--purple-transparent);
+      }
+
+      /* 通用区块容器 */
+      .section-wrap {
+        max-width: 71.25rem;
+        margin: 0 auto;
+        padding: 3.6rem 1.5rem;
+      }
+      .section-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+      }
+      .section-sub {
+        font-size: 1.125rem;
+        color: var(--text-gray);
+        margin-bottom: 3rem;
+        max-width: 50rem;
+      }
+
+      /* Core Advantages 卡片布局 */
+      .advantage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+        gap: 1.5rem;
+      }
+      .adv-card {
+        padding: 1.75rem;
+        border-radius: 1rem;
+        background: rgba(157, 92, 255, 0.05);
+        border: 1px solid var(--purple-border);
+      }
+      .adv-card h3 {
+        font-size: 1.375rem;
+        margin-bottom: 0.75rem;
+      }
+      .adv-card p {
+        color: var(--text-gray);
+        font-size: 1rem;
+      }
+
+      /* Product Capabilities */
+      .cap-item {
+        margin-bottom: 2.25rem;
+        padding: 1.5rem;
+        border-radius: 0.875rem;
+        background: rgba(157, 92, 255, 0.04);
+        border: 1px solid var(--purple-border);
+      }
+      .cap-item h3 {
+        font-size: 1.5rem;
+        margin-bottom: 0.625rem;
+      }
+      .cap-item p,
+      .cap-item ul {
+        color: var(--text-gray);
+        font-size: 1rem;
+      }
+      .cap-item ul {
+        padding-left: 1.25rem;
+        margin-top: 0.625rem;
+      }
+
+      /* Customer Stories */
+      .quote-carousel {
+        overflow: hidden;
+      }
+      .quote-track {
+        display: flex;
+        gap: 1.5rem;
+        width: 100%;
+        transition: transform 0.45s var(--ease-premium);
+        will-change: transform;
+      }
+      .quote-card {
+        flex: 0 0 40%;
+        padding: 1.875rem;
+        border-radius: 1rem;
+        background: rgba(157, 92, 255, 0.05);
+        border: 1px solid var(--purple-border);
+      }
+      .quote-card p.quote {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+      }
+      .quote-card .author {
+        color: var(--text-gray);
+        font-size: 0.9375rem;
+      }
+      .carousel-controls {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+      .carousel-controls button {
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 1px solid var(--purple-border);
+        border-radius: 50%;
+        background: rgba(157, 92, 255, 0.08);
+        color: var(--text-white);
+        font-size: 1.5rem;
+        line-height: 1;
+        cursor: pointer;
+        transition:
+          background 0.2s ease,
+          border-color 0.2s ease;
+      }
+      .carousel-controls button:hover {
+        background: var(--purple-transparent);
+        border-color: var(--primary-purple);
+      }
+      .carousel-controls button:focus-visible {
+        outline: 2px solid var(--primary-purple);
+        outline-offset: 3px;
+      }
+      .carousel-status {
+        min-width: 3rem;
+        color: var(--text-gray);
+        font-size: 0.875rem;
+        text-align: center;
+      }
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        margin-top: 2.5rem;
+      }
+      .stat-item {
+        min-width: 0;
+        padding: 0 1rem;
+        border-right: 1px dashed var(--purple-border);
+        border-bottom: none;
+        text-align: center;
+      }
+      .stat-item:first-child {
+        padding-left: 0;
+      }
+      .stat-item:last-child {
+        padding-right: 0;
+        border-right: 0;
+      }
+      .stat-item h4 {
+        font-size: 2rem;
+        color: var(--primary-purple);
+      }
+
+      /* CTA区块 带缓慢渐变呼吸脉冲 */
+      .cta-full {
+        max-width: 71.25rem;
+        margin: 0 auto 6.25rem;
+        padding: 4.375rem 1.875rem;
+        border-radius: 1.375rem;
+        text-align: center;
+        background: linear-gradient(
+          135deg,
+          rgba(157, 92, 255, 0.08),
+          rgba(157, 92, 255, 0.02)
+        );
+        border: 1px solid var(--purple-border);
+        animation: pulseGradient 6s infinite alternate ease-in-out;
+      }
+      @keyframes pulseGradient {
+        from {
+          background: linear-gradient(
+            135deg,
+            rgba(157, 92, 255, 0.06),
+            rgba(157, 92, 255, 0.01)
+          );
+        }
+        to {
+          background: linear-gradient(
+            135deg,
+            rgba(157, 92, 255, 0.12),
+            rgba(157, 92, 255, 0.04)
+          );
+        }
+      }
+      .cta-full h2 {
+        font-size: 2rem;
+        margin-bottom: 0.875rem;
+      }
+      .cta-full p {
+        font-size: 1.25rem;
+        color: var(--text-gray);
+        margin-bottom: 2.25rem;
+      }
+
+      /* Footer */
+      footer {
+        border-top: 1px solid var(--purple-border);
+        padding: 3.125rem 1.5rem;
+      }
+      .footer-wrap {
+        max-width: 71.25rem;
+        margin: 0 auto;
+      }
+      .footer-links {
+        display: flex;
+        gap: 1.5rem;
+        margin: 1.5rem 0;
+        flex-wrap: wrap;
+      }
+      .footer-links a {
+        color: var(--text-gray);
+        text-decoration: none;
+        font-size: 1rem;
+      }
+      .footer-links a:hover {
+        color: var(--primary-purple);
+      }
+
+      /* ========== 登录模态框，紫黑渐变背景 ========== */
+      .login-modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+        background: linear-gradient(
+          140deg,
+          oklch(0.1308 0.0095 285),
+          oklch(0.2173 0.0781 299.55)
+        );
+      }
+      .login-modal.active {
+        display: flex;
+      }
+      .login-card {
+        width: min(90%, 30rem);
+        background: oklch(0.1811 0.0143 284.88);
+        border: 1px solid var(--purple-border);
+        border-radius: 1.125rem;
+        padding: 2.5rem;
+      }
+      .login-card h2 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      .login-card .subtext {
+        color: var(--text-gray);
+        margin-bottom: 2rem;
+        font-size: 1rem;
+      }
+      .form-item {
+        margin-bottom: 1.375rem;
+      }
+      .form-item label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+      .form-row-pass {
+        display: flex;
+        justify-content: space-between;
+      }
+      .form-item input {
+        width: 100%;
+        padding: 0.875rem;
+        border-radius: 0.5rem;
+        background: oklch(0.2225 0.0194 284.72);
+        border: 1px solid oklch(0.3211 0 0);
+        color: oklch(1 0 0);
+        font-size: 1rem;
+      }
+      .form-item input:focus {
+        outline: none;
+        border-color: var(--primary-purple);
+      }
+      .forgot-link {
+        color: var(--link);
+        text-decoration: none;
+        font-size: 0.875rem;
+      }
+      .login-submit {
+        width: 100%;
+        padding: 0.875rem;
+        border-radius: 0.5rem;
+        background: oklch(1 0 0);
+        color: oklch(0 0 0);
+        border: none;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        margin-bottom: 1.25rem;
+      }
+      .signup-text {
+        text-align: center;
+        color: var(--text-gray);
+        font-size: 1rem;
+      }
+      .signup-text a {
+        color: var(--link);
+      }
+      .close-login {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.875rem;
+        color: oklch(1 0 0);
+        font-size: 1.875rem;
+        cursor: pointer;
+      }
+
+      /* ========== 媒体查询 ========== */
+      @media (max-width: 48rem) {
+        /* 移动端：隐藏桌面导航 */
+        .nav-group-desktop {
+          display: none;
+        }
+        header {
+          width: calc(100% - 2px);
+          max-width: none;
+          left: 1px;
+          transform: none;
+        }
+        .quote-card {
+          flex-basis: 78%;
+        }
+        .stats-row {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .stat-item {
+          padding: 1rem 0.75rem;
+        }
+        .stat-item:nth-child(odd) {
+          border-right: 1px dashed var(--purple-border);
+        }
+        .stat-item:nth-child(even) {
+          padding-right: 0;
+          border-right: 0;
+        }
+        .stat-item:first-child {
+          padding-left: 0;
+          padding-top: 0;
+        }
+        .stat-item:nth-child(2) {
+          padding-top: 0;
+          border-bottom: 1px dashed var(--purple-border);
+        }
+        .stat-item:nth-child(1) {
+          border-bottom: 1px dashed var(--purple-border);
+        }
+        .stat-item:nth-child(n + 3) {
+          padding-bottom: 0;
+        }
+        /* 移动端CTA按钮垂直堆叠 */
+        .cta-row {
+          flex-direction: column;
+          margin: auto;
+        }
+        .btn-primary,
+        .btn-secondary {
+          width: 100%;
+        }
+      }
+      /* 桌面端样式覆盖 */
+      @media (min-width: 48.0625rem) {
+        .hamburger {
+          display: none;
+        }
+        header {
+          padding: 1.375rem 2.5rem;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .quote-track {
+          transition: none;
+        }
+      }
+
+      /* ========== 视觉升级：更清晰的产品叙事与控制台质感 ========== */
+      :root {
+        --canvas: #080912;
+        --surface: rgba(19, 20, 35, 0.78);
+        --surface-strong: #151627;
+        --ink-muted: #a9aabc;
+        --line: rgba(255, 255, 255, 0.1);
+        --violet: #8b5cf6;
+        --violet-bright: #a78bfa;
+        --cyan: #238636;
+      }
+      body {
+        max-width: none;
+        border: 0;
+        background:
+          radial-gradient(circle at 82% 5%, rgba(111, 71, 243, 0.17), transparent 26rem),
+          radial-gradient(circle at 5% 35%, rgba(61, 205, 255, 0.06), transparent 24rem),
+          var(--canvas);
+        color: #f8f8ff;
+        letter-spacing: -0.01em;
+      }
+      header {
+        top: 1rem;
+        width: min(calc(100% - 2.5rem), 75rem);
+        max-width: 75rem;
+        padding: 0.75rem 1rem 0.75rem 1.25rem;
+        border: 1px solid var(--line);
+        border-radius: 0.9rem;
+        background: rgba(12, 12, 23, 0.72);
+        box-shadow: 0 0.8rem 3rem rgba(0, 0, 0, 0.22);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.125rem;
+        letter-spacing: -0.045em;
+      }
+      .logo::before {
+        content: "";
+        width: 1.65rem;
+        height: 1.65rem;
+        border-radius: 0.55rem;
+        background:
+          radial-gradient(circle at 30% 28%, #fff 0 7%, transparent 8%),
+          linear-gradient(135deg, #6444a3, var(--violet) 65%, #e879f9);
+        box-shadow: 0 0 1.25rem rgba(139, 92, 246, 0.55);
+      }
+      .nav-group-desktop {
+        gap: 1.75rem;
+        margin-right: 1.15rem;
+      }
+      .nav-item { font-size: 0.9rem; }
+      .header-cta {
+        padding: 0.65rem 1rem;
+        border-radius: 0.6rem;
+        font-size: 0.9rem;
+        font-weight: 650;
+        background: var(--primary-purple);
+        box-shadow: 0 0.65rem 1.5rem rgba(111, 69, 233, 0.22);
+      }
+      .hero {
+        text-align: left;
+        overflow: hidden;
+        background: none;
+        position: relative;
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.38;
+        background-image:
+          linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+        background-size: 3.5rem 3.5rem;
+        mask-image: linear-gradient(to bottom, black, transparent 84%);
+      }
+      .hero-inner {
+        width: min(100%, 75rem);
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(23rem, 0.95fr);
+        gap: clamp(2.5rem, 6vw, 6.5rem);
+        align-items: center;
+        position: relative;
+      }
+      .hero-copy { position: relative; z-index: 1; }
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.38rem 0.65rem;
+        margin-bottom: 1.35rem;
+        border: 1px solid rgba(167, 139, 250, 0.28);
+        border-radius: 999px;
+        color: #d9d1ff;
+        font-size: 0.76rem;
+        font-weight: 650;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        background: rgba(139, 92, 246, 0.1);
+      }
+      .eyebrow::before {
+        content: "";
+        width: 0.42rem;
+        height: 0.42rem;
+        border-radius: 50%;
+        background: var(--cyan);
+        box-shadow: 0 0 0.7rem var(--cyan);
+      }
+      .hero h1 {
+        max-width: 41rem;
+        margin-bottom: 1.4rem;
+        font-size: clamp(2.85rem, 5.2vw, 5.15rem);
+        line-height: 0.99;
+        letter-spacing: -0.068em;
+      }
+      .hero h1 span {
+        color: var(--text-white);
+        background: none;
+        -webkit-text-fill-color: var(--text-white);
+      }
+      .hero .subhead {
+        max-width: 34rem;
+        margin-bottom: 0.9rem;
+        color: #e7e5f5;
+        font-size: clamp(1.1rem, 1.7vw, 1.28rem);
+        font-weight: 400;
+      }
+      .hero .desc {
+        max-width: 34rem;
+        margin-bottom: 1.8rem;
+        color: var(--ink-muted);
+        font-size: 1rem;
+        line-height: 1.75;
+      }
+      .cta-row { justify-content: flex-start;max-width: 33rem; }
+      .btn-primary, .btn-secondary {
+        flex: 0 1 auto;
+        min-width: 10.8rem;
+        padding: 0.9rem 1.25rem;
+        border-radius: 0.7rem;
+        font-size: 0.95rem;
+        font-weight: 650;
+      }
+      .btn-primary {
+        background: var(--primary-purple);
+        box-shadow: 0 0.9rem 1.75rem rgba(112, 71, 235, 0.25);
+      }
+      .btn-secondary {
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.035);
+      }
+      .btn-secondary:hover { background: rgba(139, 92, 246, 0.13); }
+      .hero-proof {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-top: 1.8rem;
+        color: var(--ink-muted);
+        font-size: 0.8rem;
+      }
+      .proof-avatars { display: flex; padding-left: 0.35rem; }
+      .proof-avatars i {
+        display: block;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-left: -0.35rem;
+        border: 2px solid var(--canvas);
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f9a8d4, #8b5cf6);
+      }
+      .proof-avatars i:nth-child(2) { background: linear-gradient(135deg, #67e8f9, #2563eb); }
+      .proof-avatars i:nth-child(3) { background: linear-gradient(135deg, #fde68a, #ec4899); }
+      .hero-console {
+        border: 1px solid rgba(167, 139, 250, 0.25);
+        border-radius: 1.1rem;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(28, 27, 51, 0.95), rgba(13, 14, 26, 0.96));
+        box-shadow: 0 2rem 5rem rgba(0, 0, 0, 0.38), 0 0 4rem rgba(88, 63, 213, 0.12);
+      }
+      .console-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--line);
+        color: #d9d7e8;
+        font: 0.75rem ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .console-dots { display: flex; gap: 0.35rem; }
+      .console-dots i { width: 0.52rem; height: 0.52rem; border-radius: 50%; background: #ff6b92; }
+      .console-dots i:nth-child(2) { background: #ffce67; }
+      .console-dots i:nth-child(3) { background: #5eead4; }
+      .console-body { padding: 1.2rem; }
+      .console-label { color: #8f91a8; font: 0.72rem ui-monospace, SFMono-Regular, Menlo, monospace; }
+      .code-block {
+        margin: 0.65rem 0 1rem;
+        padding: 0.85rem;
+        border: 1px solid var(--line);
+        border-radius: 0.7rem;
+        background: rgba(3, 4, 12, 0.48);
+        color: #e9e7ff;
+        font: 0.73rem/1.8 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      .code-purple { color: #c4b5fd; }
+      .code-cyan { color: #67e8f9; }
+      .console-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
+      .console-metric { padding: 0.65rem; border-radius: 0.65rem; background: rgba(255,255,255,0.04); }
+      .console-metric strong { display: block; margin-bottom: 0.15rem; color: #fff; font-size: 1.05rem; }
+      .console-metric span { color: #9698ae; font-size: 0.68rem; }
+      .section-wrap {
+        width: min(100%, 75rem);
+        max-width: none;
+        padding: 1.5rem 1.25rem;
+      }
+      .section-title { margin-bottom: 0.8rem; font-size: clamp(2rem, 3.6vw, 3.25rem); line-height: 1.07; letter-spacing: -0.052em; }
+      .section-sub { max-width: 42rem; margin-bottom: 2.5rem; color: var(--ink-muted); font-size: 1.06rem; line-height: 1.75; }
+      .advantage-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+      .adv-card, .cap-item, .quote-card {
+        background: linear-gradient(145deg, rgba(255,255,255,0.065), rgba(255,255,255,0.022));
+        border-color: var(--line);
+        box-shadow: inset 0 1px rgba(255,255,255,0.035);
+      }
+      .adv-card { min-height: 12.8rem; padding: 1.45rem; transition: transform 0.25s var(--ease-premium), border-color 0.25s; }
+      .adv-card:hover { transform: translateY(-0.35rem); border-color: rgba(167,139,250,0.52); }
+      .adv-card h3 { font-size: 1.08rem; }
+      .adv-card p, .cap-item p, .cap-item ul { color: var(--ink-muted); line-height: 1.65; }
+      .cap-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+      .cap-item { min-height: 0; margin: 0; padding: 1.6rem; }
+      .cap-item h3 { font-size: 1.2rem; }
+      .cap-item ul { margin-top: 0.6rem; }
+      .quote-card { flex-basis: 48%; padding: 1.65rem; }
+      .quote-card p.quote { line-height: 1.6; }
+      .stats-row { margin-top: 3.5rem; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+      .stat-item { padding: 1.4rem 1rem; border-color: var(--line); }
+      .stat-item h4 { color: var(--violet-bright); font-size: 1.8rem; }
+      .stat-item p { color: var(--ink-muted); font-size: 0.82rem; }
+      .cta-full {
+        width: min(calc(100% - 2.5rem), 75rem);
+        max-width: none;
+        margin: 0 auto 5.5rem;
+        padding: clamp(3rem, 7vw, 5rem) 1.5rem;
+        border-color: rgba(167,139,250,0.27);
+        background: radial-gradient(circle at 50% 0%, rgba(139,92,246,0.24), transparent 62%), rgba(23, 21, 43, 0.75);
+      }
+      .cta-full h2 { max-width: 44rem; margin-inline: auto; font-size: clamp(2rem, 3.6vw, 3rem); line-height: 1.12; letter-spacing: -0.05em; }
+      .cta-full p { color: var(--ink-muted); font-size: 1rem; }
+      .cta-full .cta-row { justify-content: center; margin: auto }
+      footer { border-color: var(--line); padding: 3rem 1.25rem; }
+      .footer-wrap { width: min(100%, 75rem); max-width: none; }
+      .footer-wrap > p, .footer-links a { color: var(--ink-muted); }
+      @media (max-width: 48rem) {
+        header { top: 0.65rem; width: calc(100% - 1.25rem); left: 0.625rem; padding: 0.65rem 0.75rem; border-radius: 0.75rem; }
+        .hero { min-height: auto; padding: 8.6rem 1.25rem 4.5rem; }
+        .hero-inner { grid-template-columns: 1fr; gap: 2.8rem; }
+        .hero h1 { font-size: clamp(2.65rem, 12vw, 3.65rem); }
+        .hero .desc { font-size: 0.96rem; }
+        .hero-console { max-width: 31rem; width: 100%; }
+        .advantage-grid, .cap-list { grid-template-columns: 1fr; }
+        .section-wrap { padding: 4.6rem 1.25rem; }
+        .section-title { font-size: 2.1rem; }
+        .quote-card { flex-basis: 85%; }
+        .cta-full { width: calc(100% - 2.5rem); }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header导航【修复HTML结构！】 -->
+    <header>
+      <div class="logo">StarRiver</div>
+      <div class="header-right">
+        <!-- 桌面导航 -->
+        <div class="nav-group-desktop">
+          <div class="nav-item">
+            Products
+            <div class="hover-card">
+              <h4>Platform Overview</h4>
+              <p>
+                Unified model inference, GPU marketplace and serverless
+                endpoints.
+              </p>
+            </div>
+          </div>
+          <div class="nav-item">
+            Docs
+            <div class="hover-card">
+              <h4>Developer Docs</h4>
+              <p>API reference, SDK guides and quick start examples.</p>
+            </div>
+          </div>
+          <div class="nav-item">
+            Pricing
+            <div class="hover-card">
+              <h4>Transparent Pricing</h4>
+              <p>Pay-per-second GPU inference, no minimum commitments.</p>
+            </div>
+          </div>
+        </div>
+        <button class="header-cta open-login">Get API Key</button>
+        <!-- 汉堡按钮 -->
+        <div class="hamburger" id="hamburger">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </header>
+    <!-- 移动端侧边菜单遮罩 -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <!-- 移动端侧边菜单 -->
+    <div class="mobile-menu" id="mobileMenu">
+      <a class="mobile-nav-item">Products</a>
+      <a class="mobile-nav-item">Docs</a>
+      <a class="mobile-nav-item">Pricing</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <div class="eyebrow reveal reveal-fadeup">Inference, simplified</div>
+          <h1 class="reveal reveal-fadeup delay-1">
+            Production AI, <span>without the infrastructure tax.</span>
+          </h1>
+          <p class="subhead reveal reveal-fadeup delay-2">
+            Your fastest path from open-source model to dependable API.
+          </p>
+          <p class="desc reveal reveal-fadeup delay-2">
+            StarRiver unifies best-in-class models, resilient GPU capacity, and
+            intelligent routing into one developer-first inference platform.
+          </p>
+          <div class="cta-row reveal reveal-fadeup delay-3">
+            <button class="btn-primary open-login">Start building free</button>
+            <button class="btn-secondary">Talk to sales</button>
+          </div>
+          <div class="hero-proof reveal reveal-fadeup delay-3">
+            <span class="proof-avatars" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>Trusted by teams shipping AI at scale</span>
+          </div>
+        </div>
+        <aside class="hero-console reveal reveal-scale delay-2" aria-label="Inference API preview">
+          <div class="console-top">
+            <span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span>star-river / inference</span>
+            <span>Live</span>
+          </div>
+          <div class="console-body">
+            <div class="console-label">POST /v1/chat/completions</div>
+            <div class="code-block">
+              <span class="code-purple">model</span>: <span class="code-cyan">"qwen-3-32b"</span>,<br />
+              <span class="code-purple">messages</span>: [{ <span class="code-purple">role</span>: <span class="code-cyan">"user"</span>, ... }],<br />
+              <span class="code-purple">stream</span>: true
+            </div>
+            <div class="console-metrics">
+              <div class="console-metric"><strong>74ms</strong><span>median latency</span></div>
+              <div class="console-metric"><strong>99.99%</strong><span>availability</span></div>
+              <div class="console-metric"><strong>2.4×</strong><span>lower cost</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Product Positioning -->
+    <section class="section-wrap">
+      <h2 class="section-title reveal reveal-slide-left">
+        One Platform. Every Model. Any Scale.
+      </h2>
+      <p class="section-sub reveal reveal-slide-right">
+        StarRiver is an AI inference and GPU compute platform built by a North
+        American AI infrastructure team. We unify fragmented model providers,
+        compute vendors, and deployment tooling into a single, stable, and
+        scalable API layer.
+      </p>
+      <div class="reveal reveal-fadeup">
+        <p class="section-sub">
+          Whether you're a solo developer shipping your first AI feature or an
+          enterprise running mission-critical inference at scale, StarRiver
+          gives you:<br /><br />
+          • A single endpoint for the best open-source and proprietary models<br />
+          • On-demand GPU capacity sourced across multiple providers<br />
+          • Production-grade reliability with automatic failover and global
+          routing<br /><br />
+          Think of us as the cloud layer for AI inference — abstracting away the
+          complexity so you can focus on what you're building.
+        </p>
+      </div>
+    </section>
+
+    <!-- Core Advantages -->
+    <section class="section-wrap">
+      <h2 class="section-title reveal reveal-fadeup">
+        Why Teams Choose StarRiver
+      </h2>
+      <div class="advantage-grid">
+        <div class="adv-card reveal reveal-scale delay-1">
+          <h3>⚡ Ultra-Low Latency</h3>
+          <p>
+            Optimized inference pipelines and globally distributed edge routing
+            deliver sub-100ms response times — even for large models. Your users
+            feel the difference.
+          </p>
+        </div>
+        <div class="adv-card reveal reveal-scale delay-2">
+          <h3>💰 Radically Lower Cost</h3>
+          <p>
+            Pay only for what you use. Our multi-provider GPU marketplace and
+            intelligent scheduling cut inference costs by up to 70% compared to
+            traditional cloud providers.
+          </p>
+        </div>
+        <div class="adv-card reveal reveal-scale delay-3">
+          <h3>🔓 Open-Source First</h3>
+          <p>
+            Deploy Llama, Mistral, Qwen, DeepSeek, and hundreds of other open
+            models with a single line of code. No vendor lock-in. No proprietary
+            formats.
+          </p>
+        </div>
+        <div class="adv-card reveal reveal-scale delay-1">
+          <h3>🛡️ Enterprise-Grade Reliability</h3>
+          <p>
+            99.9% uptime SLA, automatic failover, real-time health monitoring,
+            and SOC 2 compliance. Built for teams that can't afford downtime.
+          </p>
+        </div>
+        <div class="adv-card reveal reveal-scale delay-2">
+          <h3>🔌 Drop-In Compatibility</h3>
+          <p>
+            OpenAI-compatible API. Change one base URL and you're live. Existing
+            SDKs, tools, and workflows just work.
+          </p>
+        </div>
+        <div class="adv-card reveal reveal-scale delay-3">
+          <h3>📈 Scales With You</h3>
+          <p>
+            From 10 requests a day to 10 million. Autoscaling GPU clusters
+            handle traffic spikes without manual intervention.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Product Capabilities -->
+    <section class="section-wrap">
+      <h2 class="section-title reveal reveal-fadeup">
+        Everything You Need to Deploy, Serve, and Scale AI
+      </h2>
+      <div class="cap-list">
+        <div class="cap-item reveal reveal-fadeup delay-1">
+          <h3>Unified Model API</h3>
+          <p>
+            Access 200+ open-source and commercial models through one consistent
+            API. Switch models with a single parameter — no re-integration, no
+            downtime.
+          </p>
+          <ul>
+            <li>Llama 3.1 / 3.2 / 4</li>
+            <li>Mistral / Mixtral</li>
+            <li>Qwen 2.5 / 3</li>
+            <li>DeepSeek V2 / V3</li>
+            <li>Gemma, Phi, Yi, and more</li>
+          </ul>
+        </div>
+        <div class="cap-item reveal reveal-fadeup delay-2">
+          <h3>GPU Compute Marketplace</h3>
+          <p>
+            Tap into a distributed network of GPU providers — from hyperscalers
+            to specialized inference clusters. We route your workload to the
+            optimal hardware based on latency, cost, and availability.
+          </p>
+          <p>
+            A100, H100, H200, L40S, and consumer-grade GPUs<br />Per-second
+            billing, no minimum commitment<br />Automatic failover across
+            providers
+          </p>
+        </div>
+        <div class="cap-item reveal reveal-fadeup delay-3">
+          <h3>Serverless Inference</h3>
+          <p>
+            Deploy any supported model as a serverless endpoint. Zero cold-start
+            optimization, automatic batching, and dynamic scaling — all managed
+            for you.
+          </p>
+        </div>
+        <div class="cap-item reveal reveal-fadeup delay-1">
+          <h3>Dedicated Deployments</h3>
+          <p>
+            Need isolation, custom quantization, or specific hardware? Reserve
+            dedicated GPU instances with full control over your inference stack.
+          </p>
+        </div>
+        <div class="cap-item reveal reveal-fadeup delay-2">
+          <h3>Observability & Control</h3>
+          <p>
+            Real-time dashboards for latency, throughput, error rates, and
+            spend. Set budgets, alerts, and rate limits. Full audit logs for
+            compliance.
+          </p>
+        </div>
+        <div class="cap-item reveal reveal-fadeup delay-3">
+          <h3>Enterprise Security</h3>
+          <p>
+            SOC 2 Type II certified<br />End-to-end encryption<br />VPC peering
+            and private endpoints<br />Role-based access control (RBAC)<br />Data
+            residency options
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Customer Stories -->
+    <section class="section-wrap">
+      <h2 class="section-title reveal reveal-fadeup">
+        Trusted by Builders, Backed by Results
+      </h2>
+      <div
+        class="quote-carousel"
+        id="quoteCarousel"
+        role="region"
+        aria-label="Customer testimonials"
+        aria-roledescription="carousel"
+      >
+        <div class="quote-track">
+          <div
+            class="quote-card"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="1 of 3"
+          >
+            <p class="quote">
+              "We switched from a major cloud provider to StarRiver and cut our
+              inference costs by 68% — while actually improving latency. It was
+              a no-brainer."
+            </p>
+            <p class="author">— CTO, AI-powered SaaS platform</p>
+          </div>
+          <div
+            class="quote-card"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="2 of 3"
+          >
+            <p class="quote">
+              "The unified API meant we could test five different open-source
+              models in an afternoon. We shipped our feature the same week."
+            </p>
+            <p class="author">— Lead Engineer, Series A startup</p>
+          </div>
+          <div
+            class="quote-card"
+            role="group"
+            aria-roledescription="slide"
+            aria-label="3 of 3"
+          >
+            <p class="quote">
+              "StarRiver's failover saved us during a regional outage. Our users
+              never noticed. That's the kind of reliability we need."
+            </p>
+            <p class="author">— VP Engineering, Enterprise AI company</p>
+          </div>
+        </div>
+        <div class="carousel-controls">
+          <button
+            type="button"
+            id="previousQuote"
+            aria-label="Previous testimonial"
+          >
+            ‹
+          </button>
+          <span class="carousel-status" id="quoteStatus" aria-live="polite">
+            1 / 3
+          </span>
+          <button type="button" id="nextQuote" aria-label="Next testimonial">
+            ›
+          </button>
+        </div>
+      </div>
+      <div class="stats-row reveal reveal-fadeup">
+        <div class="stat-item">
+          <h4>200+</h4>
+          <p>models available</p>
+        </div>
+        <div class="stat-item">
+          <h4>99.9%</h4>
+          <p>uptime SLA</p>
+        </div>
+        <div class="stat-item">
+          <h4>&lt;100ms</h4>
+          <p>median latency</p>
+        </div>
+        <div class="stat-item">
+          <h4>70%</h4>
+          <p>average cost reduction</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA 行动召唤区 -->
+    <section class="cta-full reveal reveal-fadeup">
+      <h2>Ready to Ship AI Without the Infrastructure Tax?</h2>
+      <p>
+        Join thousands of developers and enterprises who build on StarRiver.<br />Start
+        free. Scale when you're ready. No credit card required.
+      </p>
+      <div class="cta-row">
+        <button class="btn-primary open-login">Get Your API Key</button>
+        <button class="btn-secondary">Book a Demo</button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <div class="footer-wrap reveal reveal-fadeup">
+        <h3>StarRiver — The AI Inference Cloud</h3>
+        <p>Built in North America. Serving the world.</p>
+        <div class="footer-links">
+          <a href="#">Documentation</a>
+          <a href="#">Pricing</a>
+          <a href="#">Status</a>
+          <a href="#">Blog</a>
+          <a href="#">Careers</a>
+          <a href="#">Contact</a>
+        </div>
+        <p>
+          © 2026 StarRiver. This website is for testing purposes only and is not
+          intended for actual business operations.
+        </p>
+      </div>
+    </footer>
+
+    <!-- 登录模态框（紫黑渐变背景） -->
+    <div class="login-modal" id="loginModal">
+      <span class="close-login">&times;</span>
+      <div class="login-card">
+        <h2>Login</h2>
+        <p class="subtext">Enter your email below to login to your account</p>
+        <div class="form-item">
+          <label>Email</label>
+          <input placeholder="Enter your email address" type="email" />
+        </div>
+        <div class="form-item">
+          <div class="form-row-pass">
+            <label>Password</label>
+            <a href="#" class="forgot-link">Forgot your password?</a>
+          </div>
+          <input type="password" />
+        </div>
+        <button class="login-submit">Login</button>
+        <div class="signup-text">
+          Don't have an account? <a href="#">Sign up</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 滚动动画 IntersectionObserver
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("active");
+            }
+          });
+        },
+        {
+          threshold: 0.18,
+          rootMargin: "0px 0px -60px 0px",
+        },
+      );
+      document
+        .querySelectorAll(".reveal")
+        .forEach((el) => revealObserver.observe(el));
+
+      // 登录弹窗控制
+      const modal = document.getElementById("loginModal");
+      document.querySelectorAll(".open-login").forEach((btn) => {
+        btn.onclick = () => modal.classList.add("active");
+      });
+      document.querySelector(".close-login").onclick = () =>
+        modal.classList.remove("active");
+      modal.onclick = (e) => {
+        if (e.target === modal) modal.classList.remove("active");
+      };
+
+      // ========== 汉堡菜单JS ==========
+      const hamburger = document.getElementById("hamburger");
+      const mobileMenu = document.getElementById("mobileMenu");
+      const menuOverlay = document.getElementById("menuOverlay");
+      function toggleMenu() {
+        hamburger.classList.toggle("active");
+        mobileMenu.classList.toggle("active");
+        menuOverlay.classList.toggle("active");
+        document.body.style.overflow = mobileMenu.classList.contains("active")
+          ? "hidden"
+          : "";
+      }
+      hamburger.addEventListener("click", toggleMenu);
+      menuOverlay.addEventListener("click", toggleMenu);
+      // 移动端菜单点击关闭
+      document.querySelectorAll(".mobile-nav-item").forEach((item) => {
+        item.addEventListener("click", toggleMenu);
+      });
+
+      // ========== Customer testimonial carousel ==========
+      const quoteCarousel = document.getElementById("quoteCarousel");
+      const quoteTrack = quoteCarousel.querySelector(".quote-track");
+      const quoteSlides = Array.from(quoteTrack.children);
+      const quoteStatus = document.getElementById("quoteStatus");
+
+      // 首尾克隆：无限循环，保证首尾的居中的卡片两侧也有相邻卡片露出
+      const firstClone = quoteSlides[0].cloneNode(true);
+      const lastClone = quoteSlides[quoteSlides.length - 1].cloneNode(true);
+      [firstClone, lastClone].forEach((clone) => {
+        clone.setAttribute("aria-hidden", "true");
+        clone.removeAttribute("role");
+        clone.removeAttribute("aria-roledescription");
+        clone.removeAttribute("aria-label");
+      });
+      quoteTrack.prepend(lastClone);
+      quoteTrack.append(firstClone);
+
+      // 轨道顺序：[末尾克隆, 真实卡片..., 首卡片克隆]
+      const allSlides = Array.from(quoteTrack.children);
+      const totalReal = quoteSlides.length;
+      let current = 1; // 起始定位为第一张真实卡片
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      );
+
+      function updateQuoteCarousel() {
+        const slideWidth = allSlides[0].getBoundingClientRect().width;
+        const gap = parseFloat(getComputedStyle(quoteTrack).columnGap) || 0;
+        const currentCenter = slideWidth / 2 + current * (slideWidth + gap);
+        const offset = quoteCarousel.clientWidth / 2 - currentCenter;
+
+        quoteTrack.style.transform = `translateX(${offset}px)`;
+        const realIndex = (((current - 1) % totalReal) + totalReal) % totalReal;
+        quoteStatus.textContent = `${realIndex + 1} / ${totalReal}`;
+      }
+
+      function jumpToSlide(index) {
+        // 静默跳转到指定卡片（无过渡动画）
+        quoteTrack.style.transition = "none";
+        current = index;
+        updateQuoteCarousel();
+        requestAnimationFrame(() => {
+          quoteTrack.style.transition = "";
+        });
+      }
+
+      function snapToRealSlide() {
+        // 过渡结束后若停在克隆卡片上，静默跳回对应的真实卡片（无动画）
+        if (current === 0) jumpToSlide(totalReal);
+        else if (current === totalReal + 1) jumpToSlide(1);
+      }
+
+      function moveQuoteCarousel(direction) {
+        // 快速连点时过渡可能尚未结束、仍停在克隆卡片上，
+        // 先归位到对应的真实卡片再移动，避免索引滑出轨道导致内容消失
+        if (current === 0) current = totalReal;
+        else if (current === totalReal + 1) current = 1;
+        current += direction;
+        updateQuoteCarousel();
+        if (reduceMotion.matches) snapToRealSlide();
+      }
+
+      quoteTrack.addEventListener("transitionend", (event) => {
+        if (event.propertyName !== "transform") return;
+        snapToRealSlide();
+      });
+
+      document
+        .getElementById("previousQuote")
+        .addEventListener("click", () => moveQuoteCarousel(-1));
+      document
+        .getElementById("nextQuote")
+        .addEventListener("click", () => moveQuoteCarousel(1));
+      window.addEventListener("resize", updateQuoteCarousel);
+      window
+        .matchMedia("(max-width: 48rem)")
+        .addEventListener("change", updateQuoteCarousel);
+      const quoteResizeObserver = new ResizeObserver(updateQuoteCarousel);
+      quoteResizeObserver.observe(quoteCarousel);
+      allSlides.forEach((slide) => quoteResizeObserver.observe(slide));
+      document.fonts.ready.then(updateQuoteCarousel);
+      quoteTrack.style.transition = "none";
+      updateQuoteCarousel();
+      requestAnimationFrame(() => {
+        quoteTrack.style.transition = "";
+      });
+    </script>
+  </body>
+</html>
